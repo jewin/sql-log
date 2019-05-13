@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+	<head>
+		<title class="lang" langKey="xxxx">sql log</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf8" />
+    	<script type="text/javascript" src="js/jquery.min.js"></script>
+	</head>
+	<body>
+        <div>
+            <label>sessionId:</label>  <input type="text" id="sessionId"/>  <button id="addMoniterBtn">添加监控</button>
+            <div id="moniterId">
+
+            </div>
+        </div>
+    	<div id="container">
+
+		</div>
+		<script type="text/javascript">
+
+			function baseUrl() {
+				var url = window.location.href;
+				return url.substring(0, url.lastIndexOf("/")) + "/logsql/";
+			}
+
+            function querySqlLog() {
+                $.ajax({
+                    type: 'GET',
+                    url: baseUrl() + "sqlTrace.json?traceKey=" + $("#sessionId").val(),
+                    success: function (data) {
+                    	var json = JSON.parse(data)
+                    	if (json.ResultCode == 1 && json.Content != "") {
+							$("#container").append("<p>" + json.Content + "</p>");
+						}
+                    },
+                    complete: function() {
+                        setTimeout(querySqlLog, 3 * 1000);
+                    },
+                    dataType: "text"
+                });
+            }
+
+
+            $("#addMoniterBtn").click(function(){
+                $.ajax({
+                    type: 'GET',
+                    url: baseUrl() + "addMoniterSqlTraceKey.json?traceKey=" + $("#sessionId").val(),
+                    success: function () {
+                        $("#moniterId").append("<div><label>" + $("#sessionId").val() +"</label></div>")
+
+						// start call sql log trace
+						querySqlLog();
+                    },
+                    dataType: "text"
+                });
+            });
+
+
+			$("#removeMoniterBtn").click(function(){
+				$.ajax({
+					type: 'GET',
+					url: baseUrl() + "removeMoniterSqlTraceKey.json?traceKey=" + $("#sessionId").val(),
+					success: function (data) {
+						// $("#moniterId").append("<div><label>" + $("#sessionId").val() +"</label></div>")
+						alert(data);
+					},
+					dataType: "text"
+				});
+			});
+
+            $(document).ready(function() {
+                // querySqlLog();
+            });
+
+		</script>
+	</body>
+</html>
