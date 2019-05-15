@@ -1,6 +1,7 @@
 package com.ai.obc.log.filter;
 
 import com.alibaba.druid.support.http.AbstractWebStatImpl;
+import com.alibaba.druid.util.Utils;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -17,6 +18,8 @@ public class DruidStaticResourcesFilter extends AbstractWebStatImpl implements F
 
     private static String URL_REWRITE_PARAM_VALUE = "";
 
+    private static final String STATIC_RESOURCES_FILE_PATH = "support/http/resources";
+
     public void init(FilterConfig filterConfig) throws ServletException {
         URL_REWRITE_PARAM_VALUE = filterConfig.getInitParameter(URL_REWRITE_PARAM);
     }
@@ -28,15 +31,16 @@ public class DruidStaticResourcesFilter extends AbstractWebStatImpl implements F
         }
 
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-        HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 
         String context = httpServletRequest.getContextPath();
         String rewritePath = context + rewriteBasePath + "header.html";
 
         String uri = httpServletRequest.getRequestURI();
 
-        if (rewritePath.equals(uri)) {
-            httpServletResponse.sendRedirect( context + rewriteBasePath + "headerExt.html");
+        if (uri.contains(rewritePath)) {
+            response.setContentType("text/html; charset=utf-8");
+            String text = Utils.readFromResource(STATIC_RESOURCES_FILE_PATH + "/headerExt.html");
+            response.getWriter().print(text);
         } else {
             chain.doFilter(request, response);
         }
